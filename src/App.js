@@ -39,6 +39,23 @@ const App = () => {
   }
 
   /*
+  *
+  */
+  const confirmNetwork = async () => {
+      let chainId = await ethereum.request({ method: 'eth_chainId' });
+      console.log("Connected to chain " + chainId);
+
+      // String, hex code of the chainId of the Rinkebey test network
+      // https://docs.metamask.io/guide/ethereum-provider.html#chain-ids
+      // https://github.com/ethereum/EIPs/blob/master/EIPS/eip-695.md
+      const rinkebyChainId = "0x4";
+      if (chainId !== rinkebyChainId) {
+        alert("You are not connected to the Rinkeby Test Network!");
+      }
+
+  }
+
+  /*
   * Implement your connectWallet method here
   */
   const connectWallet = async () => {
@@ -55,14 +72,15 @@ const App = () => {
       */
       const accounts = await ethereum.request({ method: "eth_requestAccounts" });
 
+      confirmNetwork()
       /*
       * Boom! This should print out public address once we authorize Metamask.
       */
       console.log("Connected", accounts[0]);
-      setCurrentAccount(accounts[0]); 
+      setCurrentAccount(accounts[0]);
       // Setup listener! This is for the case where a user comes to our site
       // and connected their wallet for the first time.
-      setupEventListener() 
+      setupEventListener()
     } catch (error) {
       console.log(error)
     }
@@ -74,6 +92,7 @@ const App = () => {
       const { ethereum } = window;
 
       if (ethereum) {
+        confirmNetwork()
         // Same stuff again
         const provider = new ethers.providers.Web3Provider(ethereum);
         const signer = provider.getSigner();
