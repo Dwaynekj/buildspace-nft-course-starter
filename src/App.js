@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from "react";
+iimport React, { useEffect, useState } from "react";
+import myEpicNft from './utils/MyEpicNFTv3.json';
 import './styles/App.css';
+import { ethers } from "ethers";
 import twitterLogo from './assets/twitter-logo.svg';
 
-const TWITTER_HANDLE = '_buildspace';
+const TWITTER_HANDLE = 'senjoenyawd';
 const TWITTER_LINK = `https://twitter.com/${TWITTER_HANDLE}`;
 const OPENSEA_LINK = '';
 const TOTAL_MINT_COUNT = 50;
@@ -58,6 +60,33 @@ const App = () => {
     }
   }
 
+  const askContractToMintNft = async () => {
+    const CONTRACT_ADDRESS = "0xed1b9614bF8125F93bE57a4679A4Ac03f2e51D40";
+
+    try {
+      const { ethereum } = window;
+
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const connectedContract = new ethers.Contract(CONTRACT_ADDRESS, myEpicNft.abi, signer);
+
+        console.log("Going to pop wallet now to pay gas...")
+        let nftTxn = await connectedContract.makeAnEpicNFT();
+
+        console.log("Mining...please wait.")
+        await nftTxn.wait();
+        
+        console.log(`Mined, see transaction: https://rinkeby.etherscan.io/tx/${nftTxn.hash}`);
+
+      } else {
+        console.log("Ethereum object doesn't exist!");
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   // Render Methods
   const renderNotConnectedContainer = () => (
     <button onClick={connectWallet} className="cta-button connect-wallet-button">
@@ -80,13 +109,15 @@ const App = () => {
           <p className="sub-text">
             Each unique. Each beautiful. Discover your NFT today.
           </p>
-          {currentAccount === "" ? (
-            renderNotConnectedContainer()
-          ) : (
-            <button onClick={null} className="cta-button connect-wallet-button">
-              Mint NFT
-            </button>
-          )}
+          {currentAccount === "" 
+            ? renderNotConnectedContainer()
+            : (
+              /** Add askContractToMintNft Action for the onClick event **/
+              <button onClick={askContractToMintNft} className="cta-button connect-wallet-button">
+                Mint NFT
+              </button>
+            )
+          }
         </div>
         <div className="footer-container">
           <img alt="Twitter Logo" className="twitter-logo" src={twitterLogo} />
@@ -95,7 +126,7 @@ const App = () => {
             href={TWITTER_LINK}
             target="_blank"
             rel="noreferrer"
-          >{`built on @${TWITTER_HANDLE}`}</a>
+          >{`built by @${TWITTER_HANDLE} with @_buildspace`}</a>
         </div>
       </div>
     </div>
