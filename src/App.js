@@ -1,4 +1,4 @@
-mport React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import myEpicNft from './utils/MyEpicNFTv3.json';
 import './styles/App.css';
 import { ethers } from "ethers";
@@ -9,6 +9,7 @@ const TWITTER_LINK = `https://twitter.com/${TWITTER_HANDLE}`;
 const OPENSEA_LINK = '';
 const TOTAL_MINT_COUNT = 50;
 const CONTRACT_ADDRESS = "0xcc7b7BA884b01e2B6F3dBA705D306C8b9EC0Fdb9";
+const OPENSEA_URL = 'https://testnets.opensea.io/collection/squarenft-yhrfsgtahn'
 
 const App = () => {
   const [currentAccount, setCurrentAccount] = useState("");
@@ -153,6 +154,10 @@ const App = () => {
               </button>
             )
           }
+          
+         <p>
+            <button onClick={()=>location.href=OPENSEA_URL}> 🌊 View Collection on OpenSea</button>
+         </p>
         </div>
         <div className="footer-container">
           <img alt="Twitter Logo" className="twitter-logo" src={twitterLogo} />
