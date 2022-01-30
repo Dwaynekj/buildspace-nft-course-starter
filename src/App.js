@@ -8,12 +8,13 @@ const TWITTER_HANDLE = 'senjoenyawd';
 const TWITTER_LINK = `https://twitter.com/${TWITTER_HANDLE}`;
 const OPENSEA_LINK = '';
 const TOTAL_MINT_COUNT = 50;
-const CONTRACT_ADDRESS = "0xcc7b7BA884b01e2B6F3dBA705D306C8b9EC0Fdb9";
-const OPENSEA_URL = 'https://testnets.opensea.io/collection/squarenft-yhrfsgtahn'
+const CONTRACT_ADDRESS = "0x259AA691E1F636b256322e37cc5178a13A3128Cf";
+const OPENSEA_URL = 'https://testnets.opensea.io/collection/squarenft-ogdxahommo'
 
 const App = () => {
+  const [numMinted, setNumMinted] = useState(0)
   const [currentAccount, setCurrentAccount] = useState("");
-  
+
   const checkIfWalletIsConnected = async () => {
     const { ethereum } = window;
 
@@ -32,14 +33,14 @@ const App = () => {
       setCurrentAccount(account)
       // Setup listener! This is for the case where a user comes to our site
       // and connected their wallet for the first time.
-      setupEventListener() 
+      setupEventListener()
     } else {
       console.log("No authorized account found")
     }
   }
 
   /*
-  *
+  * Confirm we are connected to Rinkeby
   */
   const confirmNetwork = async () => {
       let chainId = await ethereum.request({ method: 'eth_chainId' });
@@ -51,8 +52,41 @@ const App = () => {
       const rinkebyChainId = "0x4";
       if (chainId !== rinkebyChainId) {
         alert("You are not connected to the Rinkeby Test Network!");
+        return true
       }
 
+      return false
+
+  }
+
+  /*
+  * Get num of mints left
+  */
+  const availableMints = async () => {
+    //try {
+      const { ethereum } = window;
+      let _bigNumMinted, _numMinted;
+
+      if (ethereum) {
+        // Same stuff again
+        const provider = new ethers.providers.Web3Provider(ethereum);
+
+        const signer = provider.getSigner();
+        const connectedContract = new ethers.Contract(CONTRACT_ADDRESS, myEpicNft.abi, provider);
+
+        _bigNumMinted = await connectedContract.numMinted()
+        _numMinted = _bigNumMinted.toNumber()
+        console.log("_bigNumMinted", _bigNumMinted)
+        console.log("_numMinted", _numMinted)
+        setNumMinted(_numMinted)
+
+
+      } else {
+        console.log("Ethereum object doesn't exist!. Cannot check for available Mints");
+      }
+    // } catch (error) {
+    //   console.log(error)
+    // }
   }
 
   /*
@@ -72,11 +106,11 @@ const App = () => {
       */
       const accounts = await ethereum.request({ method: "eth_requestAccounts" });
 
-      confirmNetwork()
       /*
       * Boom! This should print out public address once we authorize Metamask.
       */
       console.log("Connected", accounts[0]);
+
       setCurrentAccount(accounts[0]);
       // Setup listener! This is for the case where a user comes to our site
       // and connected their wallet for the first time.
@@ -92,7 +126,7 @@ const App = () => {
       const { ethereum } = window;
 
       if (ethereum) {
-        confirmNetwork()
+
         // Same stuff again
         const provider = new ethers.providers.Web3Provider(ethereum);
         const signer = provider.getSigner();
@@ -119,9 +153,16 @@ const App = () => {
   const askContractToMintNft = async () => {
 
     try {
+      let noopt
       const { ethereum } = window;
 
       if (ethereum) {
+
+        noopt = await confirmNetwork()
+        if (noopt){
+          return
+        }
+
         const provider = new ethers.providers.Web3Provider(ethereum);
         const signer = provider.getSigner();
         const connectedContract = new ethers.Contract(CONTRACT_ADDRESS, myEpicNft.abi, signer);
@@ -131,9 +172,10 @@ const App = () => {
 
         console.log("Mining...please wait.")
         await nftTxn.wait();
-        
+
         console.log(`Mined, see transaction: https://rinkeby.etherscan.io/tx/${nftTxn.hash}`);
 
+        availableMints()
       } else {
         console.log("Ethereum object doesn't exist!");
       }
@@ -151,6 +193,7 @@ const App = () => {
 
   useEffect(() => {
     checkIfWalletIsConnected();
+    availableMints()
   }, [])
 
   /*
@@ -164,7 +207,7 @@ const App = () => {
           <p className="sub-text">
             Each unique. Each beautiful. Discover your NFT today.
           </p>
-          {currentAccount === "" 
+          {currentAccount === ""
             ? renderNotConnectedContainer()
             : (
               /** Add askContractToMintNft Action for the onClick event **/
@@ -173,9 +216,12 @@ const App = () => {
               </button>
             )
           }
-          
+
          <p>
-            <button onClick={()=>location.href=OPENSEA_URL}> 🌊 View Collection on OpenSea</button>
+            <button className="opensea-button" onClick={()=>location.href=OPENSEA_URL}> 🌊 View Collection on OpenSea</button>
+         </p>
+         <p className="sub-text">
+            {numMinted}/150 Minted!
          </p>
         </div>
         <div className="footer-container">
